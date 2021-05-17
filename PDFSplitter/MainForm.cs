@@ -1,8 +1,11 @@
-﻿using System;
+﻿using PdfSharp.Pdf;
+using PdfSharp.Pdf.IO;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,7 +15,8 @@ namespace PDFSplitter
 {
     public partial class MainForm : Form
     {
-        public string FilePath { get; set; }
+        public string FullPath { get; set; }
+        public string FileName { get; set; }
 
         public MainForm()
         {
@@ -40,17 +44,41 @@ namespace PDFSplitter
                     PageCountTxt.Enabled = true;
                 }
 
-                // Assign the file path to the FilePath field
-                FilePath = fileExplorer.FileName;
+                // Assign the file path to the FilePath property
+                FullPath = fileExplorer.FileName;
 
-                // Display the file path text in the text field
-                FileTxtBox.Text = fileExplorer.FileName;
+                // Assign the file name to the FileName property
+                FileName = fileExplorer.SafeFileName;
+
+                // Display the file name in the text field
+                FileTxtBox.Text = FileName;
             }
         }
 
         private void SplitBtn_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            // Open the file
+            PdfDocument inputDocument = PdfReader.Open(FullPath, PdfDocumentOpenMode.Import);
+
+            // Get the file name without the extension
+            string directoryPath = Path.GetDirectoryName(FullPath);
+            string filename = Path.GetFileNameWithoutExtension(FileName);
+
+            // Get total pages in the PDF
+            int inputDocumentTotalPages = inputDocument.PageCount;
+
+            for (int i = 1; i <= inputDocumentTotalPages; i++) 
+            {
+                // Create a new PDF document
+                PdfDocument outputDocument = new PdfDocument();
+
+                // Add a specific page
+                outputDocument.AddPage(inputDocument.Pages[inputDocumentTotalPages - 1]);
+
+                // Save the PDF document
+                string outputPDFFilePath = Path.Combine(directoryPath + "\\" + filename + $"_{i}");
+                outputDocument.Save(outputPDFFilePath);
+            }
         }
 
         /// <summary>
