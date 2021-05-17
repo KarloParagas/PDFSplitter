@@ -21,6 +21,10 @@ namespace PDFSplitter
         public MainForm()
         {
             InitializeComponent();
+
+            // Allows for custom encoding
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
             FileTxtBox.ReadOnly = true;
             PageCountTxt.Enabled = false;
             SplitBtn.Enabled = false;
@@ -57,28 +61,37 @@ namespace PDFSplitter
 
         private void SplitBtn_Click(object sender, EventArgs e)
         {
+            // Get the number of pages the user wants to split by
+            int pagesPerPDF = Convert.ToInt32(PageCountTxt.Text);
+
             // Open the file
             PdfDocument inputDocument = PdfReader.Open(FullPath, PdfDocumentOpenMode.Import);
 
-            // Get the file name without the extension
+            // Get the direcroty path only
             string directoryPath = Path.GetDirectoryName(FullPath);
+
+            // Get the file name only
             string filename = Path.GetFileNameWithoutExtension(FileName);
 
             // Get total pages in the PDF
             int inputDocumentTotalPages = inputDocument.PageCount;
 
-            for (int i = 1; i <= inputDocumentTotalPages; i++) 
+            for (int i = 0; i < inputDocumentTotalPages; i++) 
             {
                 // Create a new PDF document
                 PdfDocument outputDocument = new PdfDocument();
+                outputDocument.Version = inputDocument.Version;
 
                 // Add a specific page
-                outputDocument.AddPage(inputDocument.Pages[inputDocumentTotalPages - 1]);
+                outputDocument.AddPage(inputDocument.Pages[i]);
 
                 // Save the PDF document
-                string outputPDFFilePath = Path.Combine(directoryPath + "\\" + filename + $"_{i}");
+                string outputPDFFilePath = Path.Combine(directoryPath + "\\" + filename + $"_{i + 1}.pdf");
                 outputDocument.Save(outputPDFFilePath);
             }
+
+            MessageBox.Show("Split complete!");
+            Close();
         }
 
         /// <summary>
