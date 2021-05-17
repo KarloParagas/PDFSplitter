@@ -62,7 +62,18 @@ namespace PDFSplitter
         private void SplitBtn_Click(object sender, EventArgs e)
         {
             // Get the number of pages the user wants to split by
-            int pagesPerPDF = Convert.ToInt32(PageCountTxt.Text);
+            int pagesPerPDF;
+
+            // If user doesn't enter a valid number
+            if (!int.TryParse(PageCountTxt.Text, out pagesPerPDF))
+            {
+                MessageBox.Show("Please enter a valid number.");
+                return;
+            }
+            else 
+            {
+                pagesPerPDF = Convert.ToInt32(PageCountTxt.Text);
+            }
 
             // Open the file
             PdfDocument inputDocument = PdfReader.Open(FullPath, PdfDocumentOpenMode.Import);
@@ -76,22 +87,36 @@ namespace PDFSplitter
             // Get total pages in the PDF
             int inputDocumentTotalPages = inputDocument.PageCount;
 
-            for (int i = 0; i < inputDocumentTotalPages; i++) 
+            int fileCount = 1;
+
+            try
             {
-                // Create a new PDF document
-                PdfDocument outputDocument = new PdfDocument();
-                outputDocument.Version = inputDocument.Version;
+                // Itarate through the whole PDF document
+                for (int i = 0; i < inputDocumentTotalPages; i += pagesPerPDF)
+                {
+                    // Create a new PDF document
+                    PdfDocument outputDocument = new PdfDocument();
 
-                // Add a specific page
-                outputDocument.AddPage(inputDocument.Pages[i]);
+                    // Add only the pages specified
+                    for (int j = i; j < i + pagesPerPDF; j++)
+                    {
+                        // Add a specific page
+                        outputDocument.AddPage(inputDocument.Pages[j]);
+                    }
 
-                // Save the PDF document
-                string outputPDFFilePath = Path.Combine(directoryPath + "\\" + filename + $"_{i + 1}.pdf");
-                outputDocument.Save(outputPDFFilePath);
+                    // Save the PDF document
+                    string outputPDFFilePath = Path.Combine(directoryPath + "\\" + filename + $"_{fileCount}.pdf");
+                    outputDocument.Save(outputPDFFilePath);
+                    fileCount++;
+                }
+
+                MessageBox.Show("Split complete!");
+                Close();
             }
-
-            MessageBox.Show("Split complete!");
-            Close();
+            catch (Exception)
+            {
+                MessageBox.Show("Something went wrong with the split process. Please make sure the pages you specified does not exceed the total pages in the PDF.");
+            }
         }
 
         /// <summary>
