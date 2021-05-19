@@ -111,13 +111,17 @@ namespace PDFSplitter
                 }
 
                 MessageBox.Show("Split complete!");
-                Close();
-            }
+
+                // Reset the form
+                PageCountTxt.Text = "";
+                PageCountTxt.Enabled = false;
+                FileTxtBox.Text = "";
+        }
             catch (Exception)
             {
                 MessageBox.Show("Something went wrong with the split process. Please make sure the pages you specified does not exceed the total pages in the PDF.");
             }
-        }
+}
 
         /// <summary>
         /// Enables the split button to be clicked whenever something 
